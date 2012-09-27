@@ -322,11 +322,24 @@ JustGage = function(config) {
 JustGage.prototype.refresh = function(val) {
   // overflow values
   originalVal = val;
+  if( this.config.humanFriendly ) originalVal = humanFriendlyNumber( originalVal, this.config.humanFriendlyDecimal );
+    
+  this.canvas.getById(this.config.id+"-txtvalue").attr({"text":originalVal});
+  if( arguments[1] !== undefined ) {
+    var txtmin = arguments[1];
+    this.config.min = arguments[1]; // AAAARON TODO
+    if( this.config.humanFriendly ) txtmin = humanFriendlyNumber( txtmin, this.config.humanFriendlyDecimal );
+    this.canvas.getById(this.config.id+"-txtmin").attr({"text":txtmin});
+  }
+  if( arguments[2] !== undefined ) {
+    var txtmax = arguments[2];
+    this.config.max = arguments[2]; // AAAARON TODO
+    if( this.config.humanFriendly ) txtmax = humanFriendlyNumber( txtmax, this.config.humanFriendlyDecimal );
+    this.canvas.getById(this.config.id+"-txtmax").attr({"text":txtmax});
+  }
   if (val > this.config.max) {val = this.config.max;}
   if (val < this.config.min) {val = this.config.min;}
-    
   var color = getColorForPercentage((val - this.config.min) / (this.config.max - this.config.min), this.config.levelColors, this.config.levelColorsGradient);
-  this.canvas.getById(this.config.id+"-txtvalue").attr({"text":originalVal});
   this.canvas.getById(this.config.id+"-level").animate({pki: [val, this.config.min, this.config.max, this.params.widgetW, this.params.widgetH,  this.params.dx, this.params.dy, this.config.gaugeWidthScale], "fill":color},  this.config.refreshAnimationTime, this.config.refreshAnimationType);
 };
 
@@ -405,7 +418,8 @@ var getColorForPercentage = function(pct, col, grad) {
       for (var i = 0; i < colors.length; i++) {
           if (pct <= colors[i].pct) {
             if (grad == true) {
-              var lower = colors[i - 1];
+              var lower = colors[(i - 1)>=0?(i-1):0];
+Common.debug( { 'colors':colors, 'lower':lower, 'i':i, 'pct':pct } );
               var upper = colors[i];
               var range = upper.pct - lower.pct;
               var rangePct = (pct - lower.pct) / range;
